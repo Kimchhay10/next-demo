@@ -14,14 +14,14 @@ const Post = () => {
   );
   const handleSearch = useCallback((searchValue: string) => {
     setSearchValue(searchValue);
+    setCurrentPage(1);
   }, []);
   const pageSize = 10; // Number of items per page
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
+  const endIndex = currentPage * pageSize;
   const filteredPosts = posts
-    ?.filter(
-      (item) =>
-        item.title.includes(searchValue) || item.body.includes(searchValue)
+    ?.filter((item) =>
+      item.title.toLowerCase().includes(searchValue.toLowerCase())
     )
     .slice(startIndex, endIndex);
   const isEmpty = filteredPosts && filteredPosts.length === 0;
@@ -63,13 +63,12 @@ const Post = () => {
             showSizeChanger={false}
             className="pt-[20px]"
             defaultCurrent={1}
-            total={Number(
-              posts?.filter(
-                (item) =>
-                  item.title.includes(searchValue) ||
-                  item.body.includes(searchValue)
+            current={currentPage}
+            total={
+              posts?.filter((item) =>
+                item.title.toLowerCase().includes(searchValue.toLowerCase())
               ).length
-            )}
+            }
             pageSize={pageSize}
             onChange={(page) => setCurrentPage(page)}
           />
