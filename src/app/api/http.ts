@@ -1,8 +1,8 @@
-import { BaseUrl } from "../constant/route";
+export const baseUrl = "https://jsonplaceholder.typicode.com";
 
 export const ApiEndpoints = {
-    posts: {
-        list: `${BaseUrl}/posts`,
-        detail: (slugId: string) => `${BaseUrl}/posts/${slugId}`
-    }
-}
+  posts: {
+    list: `${baseUrl}/posts`,
+    detail: (slugId: string) => `${baseUrl}/posts/${slugId}`,
+  },
+};

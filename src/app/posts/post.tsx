@@ -1,19 +1,30 @@
 "use client";
 import React, { useCallback, useState } from "react";
 import PostCard from "../components/Card/PostCard/PostCard";
-import { ERoutes } from "../constant/route";
+import { ERoutes } from "../constant/routes";
 import useSWR from "swr";
 import { PostApi } from "../api/api";
 import { ApiEndpoints } from "../api/http";
 import PaginationTable from "../components/Table/Pagination/PaginationTable";
 const Post = () => {
   const [searchValue, setSearchValue] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const { data: posts, isLoading } = useSWR(ApiEndpoints.posts.list, () =>
     PostApi.fetchPosts()
   );
   const handleSearch = useCallback((searchValue: string) => {
     setSearchValue(searchValue);
   }, []);
+  const pageSize = 10; // Number of items per page
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const filteredPosts = posts
+    ?.filter(
+      (item) =>
+        item.title.includes(searchValue) || item.body.includes(searchValue)
+    )
+    .slice(startIndex, endIndex);
+  const isEmpty = filteredPosts && filteredPosts.length === 0;
   if (isLoading) {
     return (
       <div className="w-full items-center justify-center">
@@ -30,23 +41,40 @@ const Post = () => {
         onChange={(e) => handleSearch(e.target.value)}
       />
       <h1 className="text-[20px] font-semibold">List Posts</h1>
-      {posts
-        ?.filter(
-          (item) =>
-            item.title.includes(searchValue) || item.body.includes(searchValue)
-        )
-        .map((item) => (
-          <PostCard
-            key={item.id}
-            href={{
-              pathname: ERoutes.POST_DETAIL.replace(":slugId", String(item.id)),
-              query: { slugId: item.id },
-            }}
-            title={item.title}
-            body={item.body}
+      {isEmpty ? (
+        <span>No Result...!</span>
+      ) : (
+        <div className="space-y-[12px]">
+          {filteredPosts?.map((item) => (
+            <PostCard
+              key={item.id}
+              href={{
+                pathname: ERoutes.POST_DETAIL.replace(
+                  ":slugId",
+                  String(item.id)
+                ),
+                query: { slugId: item.id },
+              }}
+              title={item.title}
+              body={item.body}
+            />
+          ))}
+          <PaginationTable
+            showSizeChanger={false}
+            className="pt-[20px]"
+            defaultCurrent={1}
+            total={Number(
+              posts?.filter(
+                (item) =>
+                  item.title.includes(searchValue) ||
+                  item.body.includes(searchValue)
+              ).length
+            )}
+            pageSize={pageSize}
+            onChange={(page) => setCurrentPage(page)}
           />
-        ))}
-      <PaginationTable defaultCurrent={1} total={Number(posts?.length)} />
+        </div>
+      )}
     </div>
   );
 };
